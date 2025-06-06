@@ -1,2 +1,7 @@
 fastapi
-uvicorn 
+uvicorn
+openai
+python-dotenv
+pydantic
+pydantic-settings>=2.0.0
+fastapi-cors 

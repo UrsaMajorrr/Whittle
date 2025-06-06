@@ -1,9 +1,14 @@
 from pydantic import BaseModel
-from typing import Dict, Any
+from typing import List, Optional
 
-class RequirementParseRequest(BaseModel):
-    requirement: str
+class Message(BaseModel):
+    role: str  # 'user' or 'assistant'
+    content: str
 
-class RequirementParseResponse(BaseModel):
-    parameters: Dict[str, Any]
-    original: str 
+class ConversationRequest(BaseModel):
+    message: str
+    history: Optional[List[Message]] = []
+
+class ConversationResponse(BaseModel):
+    response: str
+    history: List[Message] 
