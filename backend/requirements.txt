@@ -4,4 +4,5 @@ openai
 python-dotenv
 pydantic
 pydantic-settings>=2.0.0
-fastapi-cors 
+fastapi-cors
+pyautogen==0.7.6  # For agent functionality 
