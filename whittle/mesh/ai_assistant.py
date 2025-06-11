@@ -19,12 +19,16 @@ class AIAssistant:
 You should:
 1. Understand the user's geometry and simulation requirements
 2. Recommend the best meshing approach (blockMesh, snappyHexMesh, etc.)
-3. Generate appropriate dictionary files
+3. Generate appropriate dictionary files including:
+   - controlDict (required for all cases)
+   - blockMeshDict or snappyHexMeshDict
+   - Other necessary system dictionaries
 4. Provide clear explanations for your decisions
 
 Always explain your reasoning and provide best practices. If you need more information, ask specific questions.
 
-Output your responses in markdown format. When providing dictionary files, use ```foam code blocks."""
+Output your responses in markdown format. When providing dictionary files, use ```foam code blocks.
+For controlDict, always include essential settings like startTime, endTime, deltaT, writeInterval, and writeFormat."""
     
     def __init__(self, case_dir: Path, console: Optional[Console] = None):
         self.case_dir = case_dir
@@ -76,7 +80,13 @@ Output your responses in markdown format. When providing dictionary files, use `
     def write_dictionary_files(self, dictionaries: Dict[str, str]) -> None:
         """Write dictionary files to the case directory"""
         for dict_name, content in dictionaries.items():
-            file_path = self.system_dir / dict_name
+            # Determine the correct directory based on dictionary type
+            if dict_name in ["blockMeshDict", "snappyHexMeshDict", "controlDict", "fvSchemes", "fvSolution"]:
+                target_dir = self.system_dir
+            else:
+                target_dir = self.constant_dir
+                
+            file_path = target_dir / dict_name
             file_path.write_text(content)
             self.console.print(f"[green]✓[/green] Created {dict_name} at {file_path}")
             
@@ -96,7 +106,12 @@ Output your responses in markdown format. When providing dictionary files, use `
 To provide the best recommendations, please ask me questions about:
 1. The geometry and its characteristics
 2. The type of simulation I want to run
-3. Any specific mesh requirements or constraints"""
+3. Any specific mesh requirements or constraints
+4. Simulation time settings needed for controlDict:
+   - Start and end times
+   - Time step size
+   - Write interval
+   - Output format"""
         
         # Get AI response
         response = self.get_ai_response(initial_prompt)
