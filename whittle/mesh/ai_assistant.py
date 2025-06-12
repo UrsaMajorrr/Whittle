@@ -94,9 +94,8 @@ For controlDict, always include essential settings like startTime, endTime, delt
     def _run_mesh(self) -> None:
         """Run the mesh generation commands"""
         self.console.print("\n[green]✓[/green] Running mesh generation commands...")
-        subprocess.run(["cd", self.case_dir])
-        subprocess.run(["blockMesh"])
-        subprocess.run(["checkMesh"])
+        subprocess.run(["blockMesh"], cwd=self.case_dir)
+        subprocess.run(["checkMesh"], cwd=self.case_dir)
         self.console.print("\n[green]✓[/green] Mesh generation complete!")
         
     def run(self) -> None:
