@@ -8,6 +8,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
 import openai
+import subprocess
 
 class AIAssistant:
     """
@@ -90,6 +91,14 @@ For controlDict, always include essential settings like startTime, endTime, delt
             file_path.write_text(content)
             self.console.print(f"[green]✓[/green] Created {dict_name} at {file_path}")
             
+    def _run_mesh(self) -> None:
+        """Run the mesh generation commands"""
+        self.console.print("\n[green]✓[/green] Running mesh generation commands...")
+        subprocess.run(["cd", self.case_dir])
+        subprocess.run(["blockMesh"])
+        subprocess.run(["checkMesh"])
+        self.console.print("\n[green]✓[/green] Mesh generation complete!")
+        
     def run(self) -> None:
         """Main entry point for the AI mesh generation assistant"""
         self.console.print(Panel(
@@ -121,9 +130,11 @@ To provide the best recommendations, please ask me questions about:
         
         # Continue conversation until mesh is set up
         while True:
-            user_input = input("\nYour response (or 'done' to finish): ")
+            user_input = input("\nYour response ('done' to finish, 'run' to run the mesh): ")
             if user_input.lower() == 'done':
                 break
+            elif user_input.lower() == 'run':
+                self._run_mesh()
                 
             # Get AI response
             response = self.get_ai_response(user_input)
