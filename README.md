@@ -1,18 +1,18 @@
-# OpenFOAM Copilot
+# Whittle
 
 An AI-powered assistant for OpenFOAM meshing and workflows. This tool helps with:
 
-- Dictionary file validation and improvement suggestions
-- Mesh generation and manipulation
+- AI-driven mesh generation and configuration
+- Intelligent dictionary file generation
 - Best practices recommendations
-- Common error resolution
+- Interactive mesh setup workflow
 
 ## Installation
 
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd openfoam-copilot
+cd Whittle
 
 # Install in development mode
 pip install -e .
@@ -20,54 +20,73 @@ pip install -e .
 
 ## Usage
 
-### Check Dictionary Files
+### Interactive Mesh Generation
 
 ```bash
-# Check a blockMeshDict file
-openfoam-copilot check path/to/blockMeshDict
+# Start the AI-powered mesh generation assistant
+whittle mesh path/to/case
 
-# Check a snappyHexMeshDict file with explicit type
-openfoam-copilot check path/to/dict --type snappyHexMeshDict
+# You can also provide your OpenAI API key directly
+whittle mesh path/to/case --api-key YOUR_API_KEY
 ```
 
-### Interactive Mesh Generation (Coming Soon)
+The assistant will guide you through:
+1. Understanding your geometry and simulation requirements
+2. Choosing the best meshing approach (blockMesh, snappyHexMesh)
+3. Generating all necessary dictionary files (controlDict, blockMeshDict, etc.)
+4. Providing best practices and recommendations
+
+### Dictionary File Validation
 
 ```bash
-# Start interactive mesh generation assistant
-openfoam-copilot mesh path/to/case
+# Check any OpenFOAM dictionary file
+whittle check path/to/dictFile
+
+# Check with explicit dictionary type
+whittle check path/to/dict --type blockMeshDict
 ```
 
 ## Features
 
 ### Current
-- OpenFOAM dictionary file parsing and validation
-- Basic syntax checking
-- Improvement suggestions
+- AI-powered interactive mesh generation
+- Intelligent dictionary file creation:
+  - controlDict with simulation settings
+  - blockMeshDict for simple geometries
+  - snappyHexMeshDict for complex geometries
+- Basic dictionary file validation
+- Best practices recommendations
 
 ### Planned
-- Interactive mesh generation workflow
-- Mesh quality analysis
+- Advanced mesh quality analysis
 - Common error detection and resolution
-- Integration with OpenFOAM utilities
-- Support for various mesh generation approaches:
-  - blockMesh
-  - snappyHexMesh
+- Integration with more OpenFOAM utilities
+- Support for additional meshing tools:
   - cfMesh
-  - Other third-party meshing tools
+  - Third-party meshing tools
+- Mesh visualization and preview
 
 ## Development
 
 This project uses modern Python tooling:
 - `pyproject.toml` for project configuration
 - Type hints throughout the codebase
-- Ruff for linting
-- Pytest for testing
+- Rich for beautiful terminal output
+- OpenAI GPT-4 for intelligent assistance
 
 To contribute:
 1. Fork the repository
 2. Create a feature branch
 3. Add tests for new functionality
 4. Submit a pull request
+
+## Environment Setup
+
+The tool requires an OpenAI API key which can be provided in several ways:
+1. Command line argument: `--api-key`
+2. Environment variable: `OPENAI_API_KEY`
+3. `.env` file in the current directory
+4. `.env` file in your home directory
 
 ## License
 
