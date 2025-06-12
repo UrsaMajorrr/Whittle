@@ -3,7 +3,7 @@
 An AI-powered assistant for OpenFOAM meshing and workflows. This tool helps with:
 
 - AI-driven mesh generation and configuration
-- Intelligent dictionary file generation
+- Intelligent dictionary file generation and validation
 - Best practices recommendations
 - Interactive mesh setup workflow
 
@@ -34,28 +34,20 @@ The assistant will guide you through:
 1. Understanding your geometry and simulation requirements
 2. Choosing the best meshing approach (blockMesh, snappyHexMesh)
 3. Generating all necessary dictionary files (controlDict, blockMeshDict, etc.)
-4. Providing best practices and recommendations
-
-### Dictionary File Validation
-
-```bash
-# Check any OpenFOAM dictionary file
-whittle check path/to/dictFile
-
-# Check with explicit dictionary type
-whittle check path/to/dict --type blockMeshDict
-```
+4. Validating configurations and providing best practices
+5. Suggesting improvements and optimizations
 
 ## Features
 
 ### Current
 - AI-powered interactive mesh generation
-- Intelligent dictionary file creation:
+- Intelligent dictionary file creation and validation:
   - controlDict with simulation settings
   - blockMeshDict for simple geometries
   - snappyHexMeshDict for complex geometries
-- Basic dictionary file validation
 - Best practices recommendations
+- Real-time configuration validation
+- Dynamic mesh strategy optimization
 
 ### Planned
 - Advanced mesh quality analysis
