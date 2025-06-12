@@ -18,8 +18,8 @@ app = typer.Typer(
 )
 console = Console()
 
-@app.command()
-def mesh(
+@app.callback(invoke_without_command=True)
+def main(
     case_dir: Path = typer.Argument(
         ...,
         help="Path to OpenFOAM case directory",

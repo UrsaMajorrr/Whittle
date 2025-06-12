@@ -24,10 +24,10 @@ pip install -e .
 
 ```bash
 # Start the AI-powered mesh generation assistant
-whittle mesh path/to/case
+whittle path/to/case
 
 # You can also provide your OpenAI API key directly
-whittle mesh path/to/case --api-key YOUR_API_KEY
+whittle path/to/case --api-key YOUR_API_KEY
 ```
 
 The assistant will guide you through:
