@@ -134,6 +134,7 @@ To provide the best recommendations, please ask me questions about:
                 break
             elif user_input.lower() == 'run':
                 self._run_mesh()
+                break
                 
             # Get AI response
             response = self.get_ai_response(user_input)
