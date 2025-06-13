@@ -52,9 +52,11 @@ def main(
             console.print("4. .env file in home directory")
             raise typer.Exit(1)
             
+        # Set environment variable for other parts of the code
         os.environ["OPENAI_API_KEY"] = api_key
         
-        assistant = AIAssistant(case_dir, console)
+        # Create and run the assistant with the API key
+        assistant = AIAssistant(case_dir, api_key, console)
         assistant.run()
     except Exception as e:
         console.print(f"[red]Error:[/red] {str(e)}")
