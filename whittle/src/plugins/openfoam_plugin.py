@@ -16,7 +16,7 @@ class OpenFOAMPlugin(SolverPlugin):
     
     @property
     def solver_name(self) -> str:
-        return "OpenFOAM"
+        return "openfoam"
     
     def create_managers(
         self,

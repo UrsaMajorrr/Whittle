@@ -1,21 +1,19 @@
 """
 Command Line Interface for Whittle
 """
-import typer
+import argparse
 from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
 from typing import Optional
 import os
+import sys
 
+# Import plugins first to ensure they're registered
+from whittle.src.plugins import *
 from whittle.src.ai_assistant import AIAssistant
 from whittle.config import load_config, get_openai_key
 
-app = typer.Typer(
-    name="whittle",
-    help="AI-powered assistant for CFD meshing and workflows",
-    add_completion=False,
-)
 console = Console()
 
 def show_available_solvers():
@@ -30,46 +28,67 @@ def show_available_solvers():
         console.print(f"- {solver}")
     console.print()
 
-@app.callback(invoke_without_command=True)
-def main(
-    case_dir: Path = typer.Argument(
-        ...,
-        help="Path to case directory",
-        exists=True,
-        dir_okay=True,
-        file_okay=False,
-    ),
-    solver: str = typer.Option(
-        "openfoam",
-        "--solver",
-        "-s",
-        help="CFD solver to use (use --list-solvers to see available options)",
-    ),
-    list_solvers: bool = typer.Option(
-        False,
-        "--list-solvers",
-        "-l",
-        help="List available solver plugins",
-    ),
-    api_key: Optional[str] = typer.Option(
-        None,
-        "--api-key",
-        "-k",
-        help="OpenAI API key. Can also be set via OPENAI_API_KEY environment variable or .env file.",
-        envvar="OPENAI_API_KEY",
-    ),
-):
+def validate_path(path_str: str) -> Path:
+    """Validate that the path exists and is a directory"""
+    path = Path(path_str)
+    if not path.exists():
+        raise argparse.ArgumentTypeError(f"Directory {path} does not exist")
+    if not path.is_dir():
+        raise argparse.ArgumentTypeError(f"{path} is not a directory")
+    return path
+
+def main():
     """Interactive AI-powered mesh generation assistant"""
+    parser = argparse.ArgumentParser(
+        description="AI-powered assistant for CFD meshing and workflows",
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    
+    # Add arguments
+    parser.add_argument(
+        "case_dir",
+        type=validate_path,
+        nargs="?",  # Make it optional
+        help="Path to case directory"
+    )
+    
+    parser.add_argument(
+        "--solver", "-s",
+        default="openfoam",
+        help="CFD solver to use (use --list-solvers to see available options)"
+    )
+    
+    parser.add_argument(
+        "--list-solvers", "-l",
+        action="store_true",
+        help="List available solver plugins"
+    )
+    
+    parser.add_argument(
+        "--api-key", "-k",
+        help="OpenAI API key. Can also be set via OPENAI_API_KEY environment variable or .env file."
+    )
+    
+    args = parser.parse_args()
+    
     try:
-        if list_solvers:
+        # Handle --list-solvers flag first
+        if args.list_solvers:
             show_available_solvers()
-            raise typer.Exit()
+            return 0
+            
+        # Validate case directory is provided for normal operation
+        if args.case_dir is None:
+            console.print("[red]Error: Case directory is required[/red]")
+            console.print("Usage: whittle <CASE_DIR> [OPTIONS]")
+            console.print("       whittle --list-solvers")
+            return 1
             
         # Load config from .env files
         load_config()
         
         # Try to get API key from various sources
-        api_key = api_key or get_openai_key()
+        api_key = args.api_key or get_openai_key()
         
         if not api_key:
             console.print("[red]Error: OpenAI API key not found.[/red]")
@@ -78,29 +97,34 @@ def main(
             console.print("2. OPENAI_API_KEY environment variable")
             console.print("3. .env file in current directory")
             console.print("4. .env file in home directory")
-            raise typer.Exit(1)
+            return 1
             
         # Set environment variable for other parts of the code
         os.environ["OPENAI_API_KEY"] = api_key
         
+        # Get solver name and normalize it
+        solver_name = args.solver.lower()
+        
         # Validate solver choice
         available_solvers = AIAssistant.available_solvers()
-        if solver.lower() not in available_solvers:
-            console.print(f"[red]Error: Unknown solver '{solver}'[/red]")
+        if solver_name not in available_solvers:
+            console.print(f"[red]Error: Unknown solver '{args.solver}'[/red]")
             show_available_solvers()
-            raise typer.Exit(1)
+            return 1
         
         # Create and run the assistant with the API key
         assistant = AIAssistant(
-            case_dir=case_dir,
+            case_dir=args.case_dir,
             api_key=api_key,
-            solver_name=solver.lower(),
+            solver_name=solver_name,
             console=console
         )
         assistant.run()
+        return 0
+        
     except Exception as e:
         console.print(f"[red]Error:[/red] {str(e)}")
-        raise typer.Exit(1)
+        return 1
 
 if __name__ == "__main__":
-    app() 
+    sys.exit(main()) 
