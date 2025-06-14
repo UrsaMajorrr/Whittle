@@ -218,6 +218,18 @@ class DictionaryManager:
         self.extractor = extractor
         self.classifier = classifier
         self.writer = writer
+        
+        # Track required files and their status
+        self.required_files = {
+            "controlDict": False,
+            "fvSchemes": False,
+            "fvSolution": False,
+            "blockMeshDict": False,  # At least one of blockMeshDict or snappyHexMeshDict is required
+            "snappyHexMeshDict": False,
+            "U": False,  # Basic initial conditions
+            "p": False,
+        }
+        self.written_files = set()
     
     def process_ai_response(self, response: str) -> None:
         """Process an AI response and write any dictionary files found"""
@@ -225,6 +237,22 @@ class DictionaryManager:
         for name, content in dictionaries.items():
             dict_type = self.classifier.get_dictionary_type(name)
             self.writer.write_dictionary(name, content, dict_type)
+            self.written_files.add(name)
+            if name in self.required_files:
+                self.required_files[name] = True
+    
+    def get_missing_required_files(self) -> List[str]:
+        """Get list of required files that haven't been written yet"""
+        missing = []
+        for name, written in self.required_files.items():
+            # Special handling for mesh dictionary (need either blockMesh or snappyHexMesh)
+            if name in ["blockMeshDict", "snappyHexMeshDict"]:
+                if not (self.required_files["blockMeshDict"] or self.required_files["snappyHexMeshDict"]):
+                    missing.append("blockMeshDict or snappyHexMeshDict")
+                    break
+            elif not written:
+                missing.append(name)
+        return missing
 
 class IAIConversationManager(ABC):
     @abstractmethod
@@ -327,10 +355,42 @@ class AIAssistant:
         
         # Continue conversation until mesh is set up
         while True:
+            # Check for missing required files
+            missing_files = self.dictionary_manager.get_missing_required_files()
+            if missing_files:
+                self.console.print("\n[yellow]Missing required files:[/yellow]")
+                for file in missing_files:
+                    self.console.print(f"- {file}")
+                
+                # Ask AI to create missing files
+                missing_files_prompt = f"""Please create the following required OpenFOAM dictionary files that are still missing:
+{', '.join(missing_files)}
+
+For each file, provide the complete dictionary content in ```foam code blocks."""
+                
+                response = self.conversation_manager.get_response(missing_files_prompt)
+                self.console.print(Markdown(response))
+                self.dictionary_manager.process_ai_response(response)
+                continue
+            
             user_input = input("\nYour response ('done' to finish, 'run' to run the mesh): ")
             if user_input.lower() == 'done':
+                # Final check for required files before finishing
+                missing_files = self.dictionary_manager.get_missing_required_files()
+                if missing_files:
+                    self.console.print("\n[red]Cannot finish - missing required files:[/red]")
+                    for file in missing_files:
+                        self.console.print(f"- {file}")
+                    continue
                 break
             elif user_input.lower() == 'run':
+                # Check required files before running mesh
+                missing_files = self.dictionary_manager.get_missing_required_files()
+                if missing_files:
+                    self.console.print("\n[red]Cannot run mesh - missing required files:[/red]")
+                    for file in missing_files:
+                        self.console.print(f"- {file}")
+                    continue
                 self.mesh_executor.run_mesh()
                 break
             
