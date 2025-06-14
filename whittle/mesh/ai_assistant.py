@@ -361,19 +361,10 @@ class AIAssistant:
                 self.console.print("\n[yellow]Missing required files:[/yellow]")
                 for file in missing_files:
                     self.console.print(f"- {file}")
-                
-                # Ask AI to create missing files
-                missing_files_prompt = f"""Please create the following required OpenFOAM dictionary files that are still missing:
-{', '.join(missing_files)}
-
-For each file, provide the complete dictionary content in ```foam code blocks."""
-                
-                response = self.conversation_manager.get_response(missing_files_prompt)
-                self.console.print(Markdown(response))
-                self.dictionary_manager.process_ai_response(response)
-                continue
+                self.console.print("\nPlease provide information about these files or type 'generate' to auto-generate them.")
             
-            user_input = input("\nYour response ('done' to finish, 'run' to run the mesh): ")
+            user_input = input("\nYour response ('done' to finish, 'run' to run the mesh, 'generate' for missing files): ")
+            
             if user_input.lower() == 'done':
                 # Final check for required files before finishing
                 missing_files = self.dictionary_manager.get_missing_required_files()
@@ -393,13 +384,24 @@ For each file, provide the complete dictionary content in ```foam code blocks.""
                     continue
                 self.mesh_executor.run_mesh()
                 break
-            
-            # Get AI response
-            response = self.conversation_manager.get_response(user_input)
-            self.console.print(Markdown(response))
-            
-            # Process any dictionary files in the response
-            self.dictionary_manager.process_ai_response(response)
+            elif user_input.lower() == 'generate':
+                # Ask AI to create missing files
+                missing_files = self.dictionary_manager.get_missing_required_files()
+                missing_files_prompt = f"""Please create the following required OpenFOAM dictionary files that are still missing:
+{', '.join(missing_files)}
+
+For each file, provide the complete dictionary content in ```foam code blocks."""
+                
+                response = self.conversation_manager.get_response(missing_files_prompt)
+                self.console.print(Markdown(response))
+                self.dictionary_manager.process_ai_response(response)
+            else:
+                # Get AI response for user input
+                response = self.conversation_manager.get_response(user_input)
+                self.console.print(Markdown(response))
+                
+                # Process any dictionary files in the response
+                self.dictionary_manager.process_ai_response(response)
         
         self.console.print("\n[green]✓[/green] Case setup complete!")
         self.console.print("\nNext steps:")
