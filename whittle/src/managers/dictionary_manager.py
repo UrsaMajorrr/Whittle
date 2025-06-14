@@ -81,10 +81,17 @@ class OpenFOAMDictionaryClassifier(IDictionaryClassifier):
             return self.path_manager.get_constant_dir()
 
 class FoamDictionaryExtractor(IDictionaryExtractor):
+    def __init__(self, solver_name: str):
+        self.solver_name = solver_name
+
     def extract_dictionaries(self, content: str) -> Dict[str, str]:
-        pattern = r"```foam\n(.*?)```"
-        matches = re.finditer(pattern, content, re.DOTALL)
-        
+        # Try solver-specific code block first
+        pattern = rf"```{self.solver_name}\n(.*?)```"
+        matches = list(re.finditer(pattern, content, re.DOTALL))
+        # Fallback: match any code block
+        if not matches:
+            pattern = r"```[a-zA-Z]*\n(.*?)```"
+            matches = re.finditer(pattern, content, re.DOTALL)
         dictionaries = {}
         for match in matches:
             content = match.group(1)
@@ -92,7 +99,6 @@ class FoamDictionaryExtractor(IDictionaryExtractor):
             if dict_match:
                 dict_name = dict_match.group(1)
                 dictionaries[dict_name] = content
-        
         return dictionaries
 
 class OpenFOAMDictionaryWriter(IDictionaryWriter):

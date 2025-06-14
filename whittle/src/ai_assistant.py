@@ -81,7 +81,7 @@ class AIAssistant:
                     missing_files_prompt = f"""Based on the case requirements we discussed, please create the following {solver_name} configuration files:
 {', '.join(missing_files)}
 
-For each file, provide the complete content in appropriate code blocks."""
+For each file, provide the complete content in ```{self.solver_name} code blocks."""
                     
                     response = self.conversation_manager.get_response(missing_files_prompt)
                     self.console.print(Markdown(response))

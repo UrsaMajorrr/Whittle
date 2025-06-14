@@ -30,7 +30,8 @@ class OpenFOAMPlugin(SolverPlugin):
         
         path_manager = OpenFOAMFilePathManager(case_dir)
         classifier = OpenFOAMDictionaryClassifier(path_manager)
-        extractor = FoamDictionaryExtractor()
+        solver_name = self.solver_name
+        extractor = FoamDictionaryExtractor(solver_name)
         writer = OpenFOAMDictionaryWriter(classifier, console)
         dictionary_manager = DictionaryManager(extractor, classifier, writer)
         
