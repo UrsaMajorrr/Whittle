@@ -8,24 +8,48 @@ from rich.panel import Panel
 from typing import Optional
 import os
 
-from whittle.mesh.ai_assistant import AIAssistant
+from whittle.src.ai_assistant import AIAssistant
 from whittle.config import load_config, get_openai_key
 
 app = typer.Typer(
     name="whittle",
-    help="AI-powered assistant for OpenFOAM meshing and workflows",
+    help="AI-powered assistant for CFD meshing and workflows",
     add_completion=False,
 )
 console = Console()
+
+def show_available_solvers():
+    """Show available solver plugins"""
+    solvers = AIAssistant.available_solvers()
+    if not solvers:
+        console.print("[yellow]No solver plugins found![/yellow]")
+        return
+    
+    console.print("\nAvailable solvers:")
+    for solver in solvers:
+        console.print(f"- {solver}")
+    console.print()
 
 @app.callback(invoke_without_command=True)
 def main(
     case_dir: Path = typer.Argument(
         ...,
-        help="Path to OpenFOAM case directory",
+        help="Path to case directory",
         exists=True,
         dir_okay=True,
         file_okay=False,
+    ),
+    solver: str = typer.Option(
+        "openfoam",
+        "--solver",
+        "-s",
+        help="CFD solver to use (use --list-solvers to see available options)",
+    ),
+    list_solvers: bool = typer.Option(
+        False,
+        "--list-solvers",
+        "-l",
+        help="List available solver plugins",
     ),
     api_key: Optional[str] = typer.Option(
         None,
@@ -37,6 +61,10 @@ def main(
 ):
     """Interactive AI-powered mesh generation assistant"""
     try:
+        if list_solvers:
+            show_available_solvers()
+            raise typer.Exit()
+            
         # Load config from .env files
         load_config()
         
@@ -55,12 +83,24 @@ def main(
         # Set environment variable for other parts of the code
         os.environ["OPENAI_API_KEY"] = api_key
         
+        # Validate solver choice
+        available_solvers = AIAssistant.available_solvers()
+        if solver.lower() not in available_solvers:
+            console.print(f"[red]Error: Unknown solver '{solver}'[/red]")
+            show_available_solvers()
+            raise typer.Exit(1)
+        
         # Create and run the assistant with the API key
-        assistant = AIAssistant(case_dir, api_key, console)
+        assistant = AIAssistant(
+            case_dir=case_dir,
+            api_key=api_key,
+            solver_name=solver.lower(),
+            console=console
+        )
         assistant.run()
     except Exception as e:
         console.print(f"[red]Error:[/red] {str(e)}")
         raise typer.Exit(1)
 
-def main():
+if __name__ == "__main__":
     app() 
