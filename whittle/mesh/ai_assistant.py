@@ -352,56 +352,42 @@ class AIAssistant:
             self.prompt_manager.get_initial_prompt()
         )
         self.console.print(Markdown(response))
+        self.dictionary_manager.process_ai_response(response)
         
         # Continue conversation until mesh is set up
         while True:
-            # Check for missing required files
-            missing_files = self.dictionary_manager.get_missing_required_files()
-            if missing_files:
-                self.console.print("\n[yellow]Missing required files:[/yellow]")
-                for file in missing_files:
-                    self.console.print(f"- {file}")
-                self.console.print("\nPlease provide information about these files or type 'generate' to auto-generate them.")
+            user_input = input("\nYour response ('done' to finish, 'run' to run the mesh): ")
             
-            user_input = input("\nYour response ('done' to finish, 'run' to run the mesh, 'generate' for missing files): ")
-            
-            if user_input.lower() == 'done':
-                # Final check for required files before finishing
+            if user_input.lower() == 'done' or user_input.lower() == 'run':
+                # Check for missing required files
                 missing_files = self.dictionary_manager.get_missing_required_files()
                 if missing_files:
-                    self.console.print("\n[red]Cannot finish - missing required files:[/red]")
-                    for file in missing_files:
-                        self.console.print(f"- {file}")
-                    continue
-                break
-            elif user_input.lower() == 'run':
-                # Check required files before running mesh
-                missing_files = self.dictionary_manager.get_missing_required_files()
-                if missing_files:
-                    self.console.print("\n[red]Cannot run mesh - missing required files:[/red]")
-                    for file in missing_files:
-                        self.console.print(f"- {file}")
-                    continue
-                self.mesh_executor.run_mesh()
-                break
-            elif user_input.lower() == 'generate':
-                # Ask AI to create missing files
-                missing_files = self.dictionary_manager.get_missing_required_files()
-                missing_files_prompt = f"""Please create the following required OpenFOAM dictionary files that are still missing:
+                    # Ask AI to create missing files
+                    missing_files_prompt = f"""Based on the case requirements we discussed, please create the following OpenFOAM dictionary files:
 {', '.join(missing_files)}
 
 For each file, provide the complete dictionary content in ```foam code blocks."""
+                    
+                    response = self.conversation_manager.get_response(missing_files_prompt)
+                    self.console.print(Markdown(response))
+                    self.dictionary_manager.process_ai_response(response)
+                    
+                    # Recheck for missing files
+                    missing_files = self.dictionary_manager.get_missing_required_files()
+                    if missing_files:
+                        self.console.print("\n[red]Still missing required files:[/red]")
+                        for file in missing_files:
+                            self.console.print(f"- {file}")
+                        continue
                 
-                response = self.conversation_manager.get_response(missing_files_prompt)
-                self.console.print(Markdown(response))
-                self.dictionary_manager.process_ai_response(response)
-            else:
-                # Get AI response for user input
-                response = self.conversation_manager.get_response(user_input)
-                self.console.print(Markdown(response))
-                
-                # Process any dictionary files in the response
-                self.dictionary_manager.process_ai_response(response)
+                if user_input.lower() == 'run':
+                    self.mesh_executor.run_mesh()
+                break
+            
+            # Get AI response for user input
+            response = self.conversation_manager.get_response(user_input)
+            self.console.print(Markdown(response))
+            self.dictionary_manager.process_ai_response(response)
         
         self.console.print("\n[green]✓[/green] Case setup complete!")
         self.console.print("\nNext steps:")
