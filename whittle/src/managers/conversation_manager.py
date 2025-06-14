@@ -11,7 +11,7 @@ class OpenAIConversationManager(IAIConversationManager):
         self.messages.append({"role": "user", "content": user_input})
         
         response = self.client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4.1",
             messages=self.messages,
             temperature=0.7,
         )
