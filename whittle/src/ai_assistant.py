@@ -71,7 +71,9 @@ class AIAssistant:
         while True:
             user_input = input("\nYour response ('done' to finish, 'run' to run the mesh): ")
             
-            if user_input.lower() == 'done' or user_input.lower() == 'run':
+            if user_input.lower() == 'done':
+                break
+            elif user_input.lower() == 'run':
                 # Check for missing required files
                 missing_files = self.dictionary_manager.get_missing_required_files()
                 if missing_files:
@@ -93,9 +95,10 @@ For each file, provide the complete content in appropriate code blocks."""
                             self.console.print(f"- {file}")
                         continue
                 
-                if user_input.lower() == 'run':
-                    self.mesh_executor.run_mesh()
-                break
+                self.mesh_executor.run_mesh()
+                # TODO: After running the mesh, run the solver, and then run the post-processing
+                # self.solver_plugin.run_solver()
+                # self.solver_plugin.run_post_processing()
             
             # Get AI response for user input
             response = self.conversation_manager.get_response(user_input)

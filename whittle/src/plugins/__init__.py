@@ -8,4 +8,6 @@ PluginRegistry.register_plugin(OpenFOAMPlugin)
 # When adding a new solver plugin:
 # 1. Create a new plugin class implementing SolverPlugin
 # 2. Import it here
-# 3. Register it with PluginRegistry.register_plugin() 
+# 3. Register it with PluginRegistry.register_plugin()
+
+# Package marker for plugins 
