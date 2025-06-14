@@ -1,4 +1,4 @@
-from typing import Dict, Protocol, List
+from typing import Dict, Protocol, List, Set
 from dataclasses import dataclass
 from pathlib import Path
 from enum import Enum, auto
@@ -29,3 +29,8 @@ class IDictionaryExtractor(Protocol):
 class IDictionaryWriter(Protocol):
     """Writes dictionary files to the appropriate locations"""
     def write_dictionary(self, name: str, content: str, dict_type: DictionaryType) -> None: pass
+
+class IDictionaryManager(Protocol):
+    """High-level interface for managing dictionary files"""
+    def process_ai_response(self, content: str) -> None: pass
+    def get_missing_required_files(self) -> Set[str]: pass

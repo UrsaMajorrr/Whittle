@@ -1,23 +1,10 @@
-from dataclasses import dataclass
 from pathlib import Path
 from rich.console import Console
 from typing import Optional
 
 from whittle.src.interfaces.prompt_interface import IPromptManager
-from whittle.src.interfaces.file_path_interface import IFilePathManager
-from whittle.src.interfaces.mesh_executor_interface import IMeshExecutor
-from whittle.src.interfaces.conversation_interface import IAIConversationManager
-from whittle.src.interfaces.dictionary_interfaces import IDictionaryManager
+from whittle.src.interfaces.solver_managers import SolverManagers
 from whittle.src.managers.plugin_registry import PluginRegistry
-
-@dataclass
-class SolverManagers:
-    """Container for all solver-specific managers"""
-    prompt_manager: IPromptManager
-    conversation_manager: IAIConversationManager
-    dictionary_manager: IDictionaryManager
-    path_manager: IFilePathManager
-    mesh_executor: IMeshExecutor
 
 class SolverFactory:
     """Factory for creating solver-specific managers"""

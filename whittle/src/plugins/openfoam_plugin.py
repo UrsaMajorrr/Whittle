@@ -4,7 +4,7 @@ from typing import Optional
 
 from whittle.src.interfaces.solver_plugin import SolverPlugin
 from whittle.src.interfaces.prompt_interface import IPromptManager
-from whittle.src.managers.solver_factory import SolverManagers
+from whittle.src.interfaces.solver_managers import SolverManagers
 from whittle.src.managers.dictionary_manager import DictionaryManager, OpenFOAMDictionaryClassifier, FoamDictionaryExtractor, OpenFOAMDictionaryWriter
 from whittle.src.managers.prompt_manager import DefaultPromptManager
 from whittle.src.managers.file_path_manager import OpenFOAMFilePathManager

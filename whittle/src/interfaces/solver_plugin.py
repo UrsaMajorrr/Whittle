@@ -4,7 +4,7 @@ from rich.console import Console
 from typing import Optional
 
 from whittle.src.interfaces.prompt_interface import IPromptManager
-from whittle.src.managers.solver_factory import SolverManagers
+from whittle.src.interfaces.solver_managers import SolverManagers
 
 class SolverPlugin(ABC):
     """Interface that all solver plugins must implement"""
