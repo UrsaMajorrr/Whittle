@@ -1,7 +1,6 @@
 """
 AI-powered CFD case setup and mesh generation assistant
 """
-from pathlib import Path
 from typing import Optional
 from rich.console import Console
 from rich.panel import Panel
@@ -18,7 +17,6 @@ class AIAssistant:
     """
     def __init__(
         self,
-        case_dir: Path,
         api_key: str,
         solver_name: str = "openfoam",
         console: Optional[Console] = None,
@@ -30,7 +28,6 @@ class AIAssistant:
         # Get all required managers from the factory
         managers: SolverManagers = SolverFactory.create_managers(
             solver_name=solver_name,
-            case_dir=case_dir,
             api_key=api_key,
             console=self.console,
             prompt_manager=prompt_manager
@@ -39,9 +36,6 @@ class AIAssistant:
         # Store managers
         self.prompt_manager = managers.prompt_manager
         self.conversation_manager = managers.conversation_manager
-        self.dictionary_manager = managers.dictionary_manager
-        self.path_manager = managers.path_manager
-        self.mesh_executor = managers.mesh_executor
     
     @classmethod
     def available_solvers(cls) -> list[str]:
@@ -53,61 +47,31 @@ class AIAssistant:
         solver_name = self.solver_name.title()
         self.console.print(Panel(
             f"[bold blue]Welcome to Whittle AI Mesh Assistant![/bold blue]\n\n"
-            f"I'll help you set up your {solver_name} case using AI-powered recommendations.",
+            f"I'll help you set up your {solver_name} case using AI-powered recommendations.\n\n"
+            f"I'll provide configuration suggestions that you can copy and paste into your files.",
             title="Whittle"
         ))
-        
-        # Create case structure
-        self.path_manager.ensure_directories_exist()
         
         # Get initial response
         response = self.conversation_manager.get_response(
             self.prompt_manager.get_initial_prompt()
         )
         self.console.print(Markdown(response))
-        self.dictionary_manager.process_ai_response(response)
         
-        # Continue conversation until mesh is set up
+        # Continue conversation until user is done
         while True:
-            user_input = input("\nYour response ('done' to finish, 'run' to run the mesh): ")
+            user_input = input("\nYour response ('done' to finish): ")
             
             if user_input.lower() == 'done':
                 break
-            elif user_input.lower() == 'run':
-                # Check for missing required files
-                missing_files = self.dictionary_manager.get_missing_required_files()
-                if missing_files:
-                    # Ask AI to create missing files
-                    missing_files_prompt = f"""Based on the case requirements we discussed, please create the following {solver_name} configuration files:
-{', '.join(missing_files)}
-
-For each file, provide the complete content in ```{self.solver_name} code blocks, and include a line like object <filename>; at the top of each code block.
-"""
-                    
-                    response = self.conversation_manager.get_response(missing_files_prompt)
-                    self.console.print(Markdown(response))
-                    self.dictionary_manager.process_ai_response(response)
-                    
-                    # Recheck for missing files
-                    missing_files = self.dictionary_manager.get_missing_required_files()
-                    if missing_files:
-                        self.console.print("\n[red]Still missing required files:[/red]")
-                        for file in missing_files:
-                            self.console.print(f"- {file}")
-                        continue
-                
-                self.mesh_executor.run_mesh()
-                # TODO: After running the mesh, run the solver, and then run the post-processing
-                # self.solver_plugin.run_solver()
-                # self.solver_plugin.run_post_processing()
             
             # Get AI response for user input
             response = self.conversation_manager.get_response(user_input)
             self.console.print(Markdown(response))
-            self.dictionary_manager.process_ai_response(response)
         
-        self.console.print("\n[green]✓[/green] Case setup complete!")
+        self.console.print("\n[green]✓[/green] Session complete!")
         self.console.print("\nNext steps:")
-        self.console.print("1. Review the generated configuration files")
-        self.console.print("2. Run the mesh generation commands")
-        self.console.print("3. Check the mesh quality") 
+        self.console.print("1. Create the case directory structure")
+        self.console.print("2. Copy the suggested configurations into the appropriate files")
+        self.console.print("3. Run the mesh generation commands")
+        self.console.print("4. Check the mesh quality") 

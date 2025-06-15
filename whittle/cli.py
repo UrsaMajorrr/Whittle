@@ -2,7 +2,6 @@
 Command Line Interface for Whittle
 """
 import argparse
-from pathlib import Path
 from rich.console import Console
 import os
 import sys
@@ -26,15 +25,6 @@ def show_available_solvers():
         console.print(f"- {solver}")
     console.print()
 
-def validate_path(path_str: str) -> Path:
-    """Validate that the path exists and is a directory"""
-    path = Path(path_str)
-    if not path.exists():
-        raise argparse.ArgumentTypeError(f"Directory {path} does not exist")
-    if not path.is_dir():
-        raise argparse.ArgumentTypeError(f"{path} is not a directory")
-    return path
-
 def main():
     """Interactive AI-powered mesh generation assistant"""
     parser = argparse.ArgumentParser(
@@ -43,13 +33,6 @@ def main():
     )
     
     # Add arguments
-    parser.add_argument(
-        "case_dir",
-        type=validate_path,
-        nargs="?",  # Make it optional
-        help="Path to case directory"
-    )
-    
     parser.add_argument(
         "--solver", "-s",
         default="openfoam",
@@ -74,13 +57,6 @@ def main():
         if args.list_solvers:
             show_available_solvers()
             return 0
-            
-        # Validate case directory is provided for normal operation
-        if args.case_dir is None:
-            console.print("[red]Error: Case directory is required[/red]")
-            console.print("Usage: whittle <CASE_DIR> [OPTIONS]")
-            console.print("       whittle --list-solvers")
-            return 1
             
         # Load config from .env files
         load_config()
@@ -112,7 +88,6 @@ def main():
         
         # Create and run the assistant with the API key
         assistant = AIAssistant(
-            case_dir=args.case_dir,
             api_key=api_key,
             solver_name=solver_name,
             console=console
