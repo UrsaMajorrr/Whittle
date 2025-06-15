@@ -1,1 +1,11 @@
 .env
+__pycache__/
+.vscode/
+.DS_Store
+.idea/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+.coverage.*
