@@ -9,6 +9,7 @@ from rich.markdown import Markdown
 from whittle.src.interfaces.prompt_interface import IPromptManager
 from whittle.src.managers.solver_factory import SolverFactory, SolverManagers
 from whittle.src.managers.plugin_registry import PluginRegistry
+from whittle.src.managers.mesh_executor import MeshExecutor
 
 class AIAssistant:
     """
@@ -24,17 +25,23 @@ class AIAssistant:
     ):
         self.console = console or Console()
         self.solver_name = solver_name
-        
+        self.api_key = api_key
+
         # Get all required managers from the factory
         managers: SolverManagers = SolverFactory.create_managers(
-            solver_name=solver_name,
-            api_key=api_key,
+            solver_name=self.solver_name,
+            api_key=self.api_key,
             console=self.console,
             prompt_manager=prompt_manager
+        )
+        self.mesh_executor = MeshExecutor(
+            case_dir=self.case_dir,
+            console=self.console
         )
         
         # Store managers
         self.prompt_manager = managers.prompt_manager
+        self.case_dir = managers.case_dir
         self.conversation_manager = managers.conversation_manager
     
     @classmethod
@@ -60,9 +67,13 @@ class AIAssistant:
         
         # Continue conversation until user is done
         while True:
-            user_input = input("\nYour response ('done' to finish): ")
+            user_input = input("\nYour response ('done' to finish, 'run' to run the case): ")
             
             if user_input.lower() == 'done':
+                break
+            elif user_input.lower() == 'run':
+                self.console.print("\n[green]✓[/green] Running the case...")
+                self.mesh_executor.run_mesh()
                 break
             
             # Get AI response for user input

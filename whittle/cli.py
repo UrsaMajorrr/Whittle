@@ -49,6 +49,12 @@ def main():
         "--api-key", "-k",
         help="OpenAI API key. Can also be set via OPENAI_API_KEY environment variable or .env file."
     )
+
+    parser.add_argument(
+        "--test-case", "-t",
+        default="../test_case",
+        help="Path to test case directory"
+    )
     
     args = parser.parse_args()
     
