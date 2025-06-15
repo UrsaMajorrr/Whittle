@@ -33,5 +33,6 @@ class OpenFOAMPlugin(SolverPlugin):
         
         return SolverManagers(
             prompt_manager=prompt_manager,
-            conversation_manager=conversation_manager
+            conversation_manager=conversation_manager,
+            case_dir=case_dir
         ) 
