@@ -3,6 +3,40 @@ from whittle.src.interfaces.prompt_interface import IPromptManager
 class DefaultPromptManager(IPromptManager):
     def __init__(self):
         self._system_prompt = """You are an expert in OpenFOAM mesh generation and case setup. Your task is to help users create appropriate mesh configurations and solver settings for their CFD cases.
+
+CRITICAL: All OpenFOAM dictionary files MUST follow this exact format:
+
+1. Start with the standard C++ style header:
+/*--------------------------------*- C++ -*----------------------------------*\\
+| =========                 |                                                 |
+| \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\\\    /   O peration     | Version:  v2212                                 |
+|   \\\\  /    A nd           | Web:      www.OpenFOAM.com                      |
+|    \\\\/     M anipulation  |                                                 |
+\\*---------------------------------------------------------------------------*/
+
+2. Include the mandatory FoamFile dictionary:
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";  // Adjust based on file location
+    object      controlDict;  // Adjust based on file name
+}
+
+3. Add the standard separator:
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+4. Include the dictionary entries with proper formatting:
+   - Each entry must end with a semicolon
+   - Sub-dictionaries must be enclosed in curly braces
+   - Use consistent indentation
+   - Include proper dimensions where required
+
+5. End with the standard closing separator:
+// ************************************************************************* //
+
 You should:
 1. Understand the user's geometry and simulation requirements
 2. Recommend the best meshing approach (blockMesh, snappyHexMesh, etc.)

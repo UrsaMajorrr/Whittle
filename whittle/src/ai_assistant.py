@@ -83,9 +83,4 @@ class AIAssistant:
             response = self.conversation_manager.get_response(user_input)
             self.console.print(Markdown(response))
         
-        self.console.print("\n[green]✓[/green] Session complete!")
-        self.console.print("\nNext steps:")
-        self.console.print("1. Create the case directory structure")
-        self.console.print("2. Copy the suggested configurations into the appropriate files")
-        self.console.print("3. Run the mesh generation commands")
-        self.console.print("4. Check the mesh quality") 
+        self.console.print("\n[green]✓[/green] Session complete!") 
