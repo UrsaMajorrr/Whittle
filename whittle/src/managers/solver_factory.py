@@ -12,10 +12,10 @@ class SolverFactory:
     @staticmethod
     def create_managers(
         solver_name: str,
-        case_dir: Path,
         api_key: str,
         console: Optional[Console] = None,
         prompt_manager: Optional[IPromptManager] = None,
+        case_dir: Optional[Path] = None,
     ) -> SolverManagers:
         """Create a set of managers for the given solver"""
         # Get the appropriate plugin

@@ -96,7 +96,8 @@ def main():
         assistant = AIAssistant(
             api_key=api_key,
             solver_name=solver_name,
-            console=console
+            console=console,
+            case_dir=args.test_case
         )
         assistant.run()
         return 0

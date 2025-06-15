@@ -5,6 +5,7 @@ from typing import Optional
 from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
+from pathlib import Path
 
 from whittle.src.interfaces.prompt_interface import IPromptManager
 from whittle.src.managers.solver_factory import SolverFactory, SolverManagers
@@ -22,17 +23,19 @@ class AIAssistant:
         solver_name: str = "openfoam",
         console: Optional[Console] = None,
         prompt_manager: Optional[IPromptManager] = None,
+        case_dir: Optional[Path] = None,
     ):
         self.console = console or Console()
         self.solver_name = solver_name
         self.api_key = api_key
-
+        self.case_dir = case_dir
         # Get all required managers from the factory
         managers: SolverManagers = SolverFactory.create_managers(
             solver_name=self.solver_name,
             api_key=self.api_key,
             console=self.console,
-            prompt_manager=prompt_manager
+            prompt_manager=prompt_manager,
+            case_dir=self.case_dir
         )
         self.mesh_executor = MeshExecutor(
             case_dir=self.case_dir,
