@@ -17,10 +17,13 @@ class OpenAILLMAgent(LLMAgent):
             model="gpt-4.1",
             messages=self.messages,
             temperature=0.7,
+            stream=True
         )
-        ai_response = response.choices[0].message.content
-        self.messages.append({"role": "assistant", "content": ai_response})
-        return ai_response
+        # ai_response = response.choices[0].message.content
+        # self.messages.append({"role": "assistant", "content": ai_response})
+        # return ai_response
+        self.messages.append({"role": "assistant", "content": response})
+        return response
     
     def _store_conversation(self, conversation: list[str]) -> None:
         self.messages.extend(conversation)
@@ -45,6 +48,7 @@ class ClaudeLLMAgent(LLMAgent):
             model="claude-3-sonnet-20240320",
             messages=self.messages,
             temperature=0.7,
+            stream=True
         )
         ai_response = response.content[0].text
         self.messages.append({"role": "assistant", "content": ai_response})
