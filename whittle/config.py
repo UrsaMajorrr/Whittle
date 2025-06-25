@@ -22,6 +22,10 @@ def load_config() -> None:
     if home_env.exists():
         load_dotenv(home_env)
         
-def get_openai_key() -> Optional[str]:
+def get_openai_key() -> str:
     """Get OpenAI API key from environment"""
-    return os.getenv("OPENAI_API_KEY") 
+    return os.getenv("OPENAI_API_KEY", "")
+
+def get_anthropic_key() -> str:
+    """Get Anthropic API key from environment"""
+    return os.getenv("ANTHROPIC_API_KEY", "") 
