@@ -90,7 +90,12 @@ class WhittleServer:
                 })
 
                 response = self.llm_model.return_response_with_tools(query, available_tools)
-                final_text.append(response)
+                if hasattr(response, 'content'):
+                    for content in response.content:
+                        if content.type == "text":
+                            final_text.append(content.text)
+                else:
+                    final_text.append(str(response))
 
         return "".join(final_text)
     
