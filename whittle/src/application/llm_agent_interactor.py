@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 class OpenAILLMAgent(LLMAgent):
     def __init__(self, system_prompt: str):
-        super().__init__()
+        super().__init__(system_prompt=system_prompt)
         self.client = openai.Client(api_key=self._get_api_key_from_env())
         self.messages: List[Dict[str, str]] = [{"role": "system", "content": system_prompt}]
 
@@ -25,6 +25,19 @@ class OpenAILLMAgent(LLMAgent):
         self.messages.append({"role": "assistant", "content": response})
         return response
     
+    def return_response_with_tools(self, prompt: str, tools: list[str]) -> str:
+        self.messages.append({"role": "user", "content": prompt})
+        response = self.client.chat.completions.create(
+            model="gpt-4.1",
+            messages=self.messages,
+            temperature=0.7,
+            stream=False,
+            tools=tools
+        )
+        ai_response = response.choices[0].message.content
+        self.messages.append({"role": "assistant", "content": ai_response})
+        return ai_response
+
     def _store_conversation(self, conversation: list[str]) -> None:
         self.messages.extend(conversation)
 
@@ -38,22 +51,37 @@ class OpenAILLMAgent(LLMAgent):
 
 class ClaudeLLMAgent(LLMAgent):
     def __init__(self, system_prompt: str):
-        super().__init__()
+        super().__init__(system_prompt=system_prompt)
         self.client = anthropic.Anthropic(api_key=self._get_api_key_from_env())
-        self.messages: List[Dict[str, str]] = [{"role": "system", "content": system_prompt}]
+        self.messages: List[Dict[str, str]] = [{"role": "user", "content": system_prompt}]
 
     def return_response(self, prompt: str) -> str:
         self.messages.append({"role": "user", "content": prompt})
         response = self.client.messages.create(
-            model="claude-3-sonnet-20240320",
+            model="claude-sonnet-4-20250514",
             messages=self.messages,
             temperature=0.7,
-            stream=True
+            max_tokens=8192,
+            stream=False
         )
         ai_response = response.content[0].text
         self.messages.append({"role": "assistant", "content": ai_response})
         return ai_response
     
+    def return_response_with_tools(self, prompt: str, tools: list[str]) -> str:
+        self.messages.append({"role": "user", "content": prompt})
+        response = self.client.messages.create(
+            model="claude-sonnet-4-20250514",
+            messages=self.messages,
+            temperature=0.7,
+            max_tokens=8192,
+            stream=False,
+            tools=tools
+        )
+        ai_response = response.content[0].text
+        self.messages.append({"role": "assistant", "content": ai_response})
+        return response
+
     def _store_conversation(self, conversation: list[str]) -> None:
         self.messages.extend(conversation)
 

@@ -15,10 +15,6 @@ class CFDSoftware(ABC):
         pass
 
     @abstractmethod
-    def run_command(self, command: str, options: dict[str, str]) -> None:
-        pass
-
-    @abstractmethod
     def get_case_dir(self) -> Path:
         pass
 

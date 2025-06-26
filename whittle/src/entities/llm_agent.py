@@ -14,6 +14,11 @@ class LLMAgent(ABC):
         pass
 
     @abstractmethod
+    def return_response_with_tools(self, prompt: str) -> str:
+        """Return a response for the given prompt with tools"""
+        pass
+
+    @abstractmethod
     def _get_api_key_from_env(self) -> str:
         """Get API key from environment variables"""
         pass
