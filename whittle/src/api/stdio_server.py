@@ -75,7 +75,15 @@ class WhittleServer:
                 tool_args = content.input
 
                 result = await self.session.call_tool(tool_name, tool_args)
-                final_text.append(f"\nTool Result: {result.content[0].text}\n")
+                
+                # Format the tool result nicely
+                result_text = result.content[0].text
+                if "Command output:" in result_text:
+                    final_text.append("\n=== Command Output ===\n")
+                    final_text.append(result_text)
+                    final_text.append("\n=== End Command Output ===\n")
+                else:
+                    final_text.append(f"\nTool Result: {result_text}\n")
 
                 assistant_message.append(content)
                 messages.append({
@@ -92,7 +100,6 @@ class WhittleServer:
                 })
 
                 response = self.llm_model.return_response_with_tools(query, available_tools)
-
                 final_text.append(response)
 
         return "".join(final_text)
