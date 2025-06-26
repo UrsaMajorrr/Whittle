@@ -119,7 +119,7 @@ def foam_block_mesh_generation(case_dir: str) -> str:
     system_dir.mkdir(parents=True, exist_ok=True)
     
     software_instance = software_class(case_dir=case_path)
-    response_text = llm_model.return_response(f"Generate a blockMeshDict file for the {case_dir} case. Provide just the file content, no other text. Since it is in plain text, it will be wrapped in ```text``` tags. Do not include those tags in the file content.")
+    response_text = llm_model.return_response(f"Generate a blockMeshDict file for the {case_dir} case. Provide just the file content, no other text. Do not include ```text``` tags in the file content.")
     with open(system_dir / "blockMeshDict", "w") as f:
         f.write(response_text)
     software_instance.block_mesh()
@@ -134,7 +134,7 @@ def foam_snappy_hex_mesh_generation(case_dir: str) -> str:
     system_dir.mkdir(parents=True, exist_ok=True)
     
     software_instance = software_class(case_dir=case_path)
-    response_text = llm_model.return_response(f"Generate a snappyHexMeshDict file for the {case_dir} case. Provide just the file content, no other text. Since it is in plain text, it will be wrapped in ```text``` tags. Do not include those tags in the file content.")
+    response_text = llm_model.return_response(f"Generate a snappyHexMeshDict file for the {case_dir} case. Provide just the file content, no other text. Do not include ```text``` tags in the file content.")
     with open(system_dir / "snappyHexMeshDict", "w") as f:
         f.write(response_text)
     software_instance.snappy_hex_mesh()
