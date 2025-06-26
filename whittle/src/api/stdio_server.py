@@ -61,51 +61,54 @@ class WhittleServer:
         } for tool in response.tools]
 
         initial_response = self.llm_model.return_response_with_tools(query, available_tools)
-
         final_text = []
 
-        assistant_message = []
-        for content in initial_response.content:
-            if content.type == "text":
-                final_text.append(content.text)
-            elif content.type == "tool_use":
-                tool_name = content.name
-                tool_args = content.input
+        # Handle the initial response
+        if hasattr(initial_response, 'content'):
+            # If it's a structured response with content attribute
+            for content in initial_response.content:
+                if content.type == "text":
+                    final_text.append(content.text)
+                elif content.type == "tool_use":
+                    tool_name = content.name
+                    tool_args = content.input
 
-                result = await self.session.call_tool(tool_name, tool_args)
-                
-                # Format the tool result nicely
-                result_text = result.content[0].text
-                if "Command output:" in result_text:
-                    final_text.append("\n=== Command Output ===\n")
-                    final_text.append(result_text)
-                    final_text.append("\n=== End Command Output ===\n")
-                else:
-                    final_text.append(f"\nTool Result: {result_text}\n")
+                    result = await self.session.call_tool(tool_name, tool_args)
+                    
+                    # Format the tool result nicely
+                    result_text = result.content[0].text
+                    if "Command output:" in result_text:
+                        final_text.append("\n=== Command Output ===\n")
+                        final_text.append(result_text)
+                        final_text.append("\n=== End Command Output ===\n")
+                    else:
+                        final_text.append(f"\nTool Result: {result_text}\n")
 
-                assistant_message.append(content)
-                messages.append({
-                    "role": "assistant",
-                    "content": assistant_message
-                })
-                messages.append({
-                    "role": "user",
-                    "content": [{
-                        "type": "tool_result",
-                        "tool_use_id": content.id,
-                        "content": result.content
-                    }]
-                })
+                    messages.append({
+                        "role": "assistant",
+                        "content": [content]
+                    })
+                    messages.append({
+                        "role": "user",
+                        "content": [{
+                            "type": "tool_result",
+                            "tool_use_id": content.id,
+                            "content": result.content
+                        }]
+                    })
 
-                follow_up_response = self.llm_model.return_response_with_tools(query, available_tools)
-                if hasattr(follow_up_response, 'content'):
-                    # If it's a structured response with content attribute
-                    for content in follow_up_response.content:
-                        if content.type == "text":
-                            final_text.append(content.text)
-                else:
-                    # If it's a simple string response
-                    final_text.append(follow_up_response)
+                    follow_up_response = self.llm_model.return_response_with_tools(query, available_tools)
+                    if hasattr(follow_up_response, 'content'):
+                        # If it's a structured response with content attribute
+                        for content in follow_up_response.content:
+                            if content.type == "text":
+                                final_text.append(content.text)
+                    else:
+                        # If it's a simple string response
+                        final_text.append(follow_up_response)
+        else:
+            # If it's a simple string response
+            final_text.append(initial_response)
 
         return "".join(final_text)
     
