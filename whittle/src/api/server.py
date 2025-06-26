@@ -109,7 +109,7 @@ FoamFile
 Provide just the file content starting with this header, followed by the dictionary entries. Do not include ```text``` tags in the file content.""")
         
         with open(file_path, "w") as f:
-            f.write(response_text)
+            f.write(response_text.content[0].text)
 
     return f"Successfully set up {selected_software} case with config files in {case_dir}"
 
