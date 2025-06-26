@@ -65,7 +65,7 @@ class ClaudeLLMAgent(LLMAgent):
         )
         ai_response = response.content[0].text
         self.messages.append({"role": "assistant", "content": ai_response})
-        return ai_response
+        return response
     
     def return_response_with_tools(self, prompt: str, tools: list[str]) -> str:
         self.messages.append({"role": "user", "content": prompt})
@@ -79,7 +79,7 @@ class ClaudeLLMAgent(LLMAgent):
         )
         # Don't store the response in conversation history for tool calls
         # This prevents the model from repeating itself after tool results
-        return response.content[0].text
+        return response
 
     def _store_conversation(self, conversation: list[str]) -> None:
         self.messages.extend(conversation)
