@@ -75,11 +75,38 @@ def setup_cfd_case(prompt: str, case_dir: str) -> str:
     software_class = registry.get_software(selected_software)
     software_instance = software_class(case_dir=case_path)
     
+    # OpenFOAM header template
+    foam_header = """/*--------------------------------*- C++ -*----------------------------------*\\
+  =========                 |
+  \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\\\    /   O peration     | Website:  https://openfoam.org
+    \\\\  /    A nd           | Version:  12
+     \\\\/     M anipulation  |
+\\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      %s;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //"""
+    
     # Generate config files
     for file in software_instance.get_required_files():
         file_path = case_path / file  # This will handle the system/ prefix correctly
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        response_text = llm_model.return_response(f"Generate a {file} file for the {selected_software} software. Provide just the file content, no other text. Since it is in plain text, it will be wrapped in ```text``` tags. Do not include those tags in the file content.")
+        
+        # Get the object name from the file path (e.g., "controlDict" from "system/controlDict")
+        object_name = file_path.name
+        
+        response_text = llm_model.return_response(
+            f"""Generate a {file} file for the {selected_software} software. The file MUST start with this exact header (with {object_name} as the object name):
+
+{foam_header % object_name}
+
+Provide just the file content starting with this header, followed by the dictionary entries. Do not include ```text``` tags in the file content.""")
+        
         with open(file_path, "w") as f:
             f.write(response_text)
 
@@ -118,8 +145,30 @@ def foam_block_mesh_generation(case_dir: str) -> str:
     system_dir = case_path / "system"
     system_dir.mkdir(parents=True, exist_ok=True)
     
+    foam_header = """/*--------------------------------*- C++ -*----------------------------------*\\
+  =========                 |
+  \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\\\    /   O peration     | Website:  https://openfoam.org
+    \\\\  /    A nd           | Version:  12
+     \\\\/     M anipulation  |
+\\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //"""
+    
     software_instance = software_class(case_dir=case_path)
-    response_text = llm_model.return_response(f"Generate a blockMeshDict file for the {case_dir} case. Provide just the file content, no other text. Do not include ```text``` tags in the file content.")
+    response_text = llm_model.return_response(
+        f"""Generate a blockMeshDict file for the {case_dir} case. The file MUST start with this exact header:
+
+{foam_header}
+
+Provide just the file content starting with this header, followed by the blockMesh configuration. Do not include ```text``` tags in the file content.""")
+    
     with open(system_dir / "blockMeshDict", "w") as f:
         f.write(response_text)
     software_instance.block_mesh()
@@ -133,8 +182,30 @@ def foam_snappy_hex_mesh_generation(case_dir: str) -> str:
     system_dir = case_path / "system"
     system_dir.mkdir(parents=True, exist_ok=True)
     
+    foam_header = """/*--------------------------------*- C++ -*----------------------------------*\\
+  =========                 |
+  \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\\\    /   O peration     | Website:  https://openfoam.org
+    \\\\  /    A nd           | Version:  12
+     \\\\/     M anipulation  |
+\\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      snappyHexMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //"""
+    
     software_instance = software_class(case_dir=case_path)
-    response_text = llm_model.return_response(f"Generate a snappyHexMeshDict file for the {case_dir} case. Provide just the file content, no other text. Do not include ```text``` tags in the file content.")
+    response_text = llm_model.return_response(
+        f"""Generate a snappyHexMeshDict file for the {case_dir} case. The file MUST start with this exact header:
+
+{foam_header}
+
+Provide just the file content starting with this header, followed by the snappyHexMesh configuration. Do not include ```text``` tags in the file content.""")
+    
     with open(system_dir / "snappyHexMeshDict", "w") as f:
         f.write(response_text)
     software_instance.snappy_hex_mesh()
