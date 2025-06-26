@@ -1,13 +1,40 @@
-
 from mcp.server.fastmcp import FastMCP
 from pathlib import Path
 from whittle.src.infra.registry import SoftwareRegistry, ModelRegistry
 import re
+import os
+import subprocess
 
 #TODO: Implement OpenFOAM case running tool, mesh generation tool
 #TODO: Implement SU2 case running tool, config file generation tool, file saving tool
 #TODO: RAG for CFD software documentation and user file (this is far in the future)
 #TODO: Implement tool for meshing for CFD software that can't mesh itself (this is far in the future)
+
+# Initialize OpenFOAM environment if available
+def setup_openfoam_env():
+    possible_paths = [
+        "/usr/lib/openfoam/openfoam2312/etc/bashrc",
+        "/opt/openfoam2312/etc/bashrc",
+        "/usr/lib/openfoam/openfoam2306/etc/bashrc",
+        "/opt/openfoam2306/etc/bashrc",
+        "/opt/openfoam12/etc/bashrc",
+    ]
+    for path in possible_paths:
+        if os.path.exists(path):
+            # Export the environment from sourcing OpenFOAM's bashrc
+            env_cmd = f'bash -c "source {path} && env"'
+            try:
+                env_output = subprocess.check_output(env_cmd, shell=True).decode()
+                for line in env_output.splitlines():
+                    if '=' in line:
+                        key, value = line.split('=', 1)
+                        os.environ[key] = value
+                print(f"OpenFOAM environment sourced from {path}")
+                return True
+            except subprocess.CalledProcessError:
+                print(f"Failed to source OpenFOAM environment from {path}")
+    print("No OpenFOAM environment found")
+    return False
 
 mcp = FastMCP("whittle")
 llm_model = None
@@ -56,7 +83,7 @@ def run_simulation(software_name: str, case_dir: str) -> str:
     """Run a simulation for the given CFD software"""
 
 @mcp.tool()
-def edit_file(file_path: str, content_to_change :str,  new_content: str) -> str:
+def edit_file(file_path: str, content_to_change: str, new_content: str) -> str:
     """Edit a file with the given content. If the file exists, returns its current content first."""
     try:
         current_content = ""
@@ -99,6 +126,7 @@ def foam_snappy_hex_mesh_generation(case_dir: str) -> str:
     return f"Successfully generated a mesh for the {case_dir} case"
 
 if __name__ == "__main__":
+    setup_openfoam_env()
     mcp.run(transport="stdio")
 
 
