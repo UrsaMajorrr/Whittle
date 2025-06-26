@@ -172,7 +172,7 @@ Provide just the file content starting with this header, followed by the blockMe
     
     blockMeshDict_path = system_dir / "blockMeshDict"
     with open(blockMeshDict_path, "w") as f:
-        f.write(response_text)
+        f.write(response_text.content[0].text)
 
     # Run blockMesh
     software_instance.block_mesh()
@@ -217,7 +217,7 @@ Provide just the file content starting with this header, followed by the snappyH
     
     snappyHexMeshDict_path = system_dir / "snappyHexMeshDict"
     with open(snappyHexMeshDict_path, "w") as f:
-        f.write(response_text)
+        f.write(response_text.content[0].text)
 
     # Run snappyHexMesh
     software_instance.snappy_hex_mesh()
