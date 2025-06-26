@@ -56,10 +56,9 @@ class ClaudeLLMAgent(LLMAgent):
         self.messages: List[Dict[str, str]] = [{"role": "user", "content": system_prompt}]
 
     def return_response(self, prompt: str) -> str:
-        self.messages.append({"role": "user", "content": prompt})
         response = self.client.messages.create(
             model="claude-sonnet-4-20250514",
-            messages=self.messages,
+            messages=[{"role": "user", "content": prompt}],  # Only send the current prompt
             temperature=0.7,
             max_tokens=8192,
             stream=False
