@@ -75,13 +75,26 @@ def edit_file(file_path: str, content_to_change :str,  new_content: str) -> str:
         return f"Current content:\n{current_content}"
     except Exception as e:
         return f"Error editing file: {str(e)}"
-    
+
 @mcp.tool()
-def foam_mesh_generation(case_dir: str) -> str:
-    """Generate a mesh for the given OpenFOAM case. This will run blockMesh for simple cases and snappyHexMesh for complex cases."""
+def foam_block_mesh_generation(case_dir: str) -> str:
+    """Generate a mesh for the given OpenFOAM case. This will run blockMesh for simple cases. Write the blockMeshDict file to the case directory. Remember to write the files to the system folder in the case directory."""
     software_class = SoftwareRegistry().get_software("OpenFOAM")
     software_instance = software_class(case_dir=Path(case_dir))
+    response_text = llm_model.return_response(f"Generate a blockMeshDict file for the {case_dir} case. Provide just the file content, no other text. Since it is in plain text, it will be wrapped in ```text``` tags. Do not include those tags in the file content.")
+    with open(Path(case_dir) / "system" / "blockMeshDict", "w") as f:
+        f.write(response_text)
     software_instance.block_mesh()
+    return f"Successfully generated a mesh for the {case_dir} case"
+
+@mcp.tool()
+def foam_snappy_hex_mesh_generation(case_dir: str) -> str:
+    """Generate a mesh for the given OpenFOAM case. This will run snappyHexMesh for complex cases. Write the snappyHexMeshDict file to the case directory. Remember to write the files to the system folder in the case directory."""
+    software_class = SoftwareRegistry().get_software("OpenFOAM")
+    software_instance = software_class(case_dir=Path(case_dir))
+    response_text = llm_model.return_response(f"Generate a snappyHexMeshDict file for the {case_dir} case. Provide just the file content, no other text. Since it is in plain text, it will be wrapped in ```text``` tags. Do not include those tags in the file content.")
+    with open(Path(case_dir) / "system" / "snappyHexMeshDict", "w") as f:
+        f.write(response_text)
     software_instance.snappy_hex_mesh()
     return f"Successfully generated a mesh for the {case_dir} case"
 
