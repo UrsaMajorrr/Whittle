@@ -11,8 +11,6 @@ from dotenv import load_dotenv
 from whittle.src.application.llm_agent_interactor import ClaudeLLMAgent, LLMAgent
 from whittle.src.infra.registry import ModelRegistry
 
-#TODO: Implement functionality for users to pick their LLM
-
 load_dotenv()
 llm_model = None
 
@@ -62,12 +60,12 @@ class WhittleServer:
             "input_schema": tool.inputSchema
         } for tool in response.tools]
 
-        response = self.llm_model.return_response_with_tools(query, available_tools)
+        initial_response = self.llm_model.return_response_with_tools(query, available_tools)
 
         final_text = []
 
         assistant_message = []
-        for content in response.content:
+        for content in initial_response.content:
             if content.type == "text":
                 final_text.append(content.text)
             elif content.type == "tool_use":
@@ -99,8 +97,15 @@ class WhittleServer:
                     }]
                 })
 
-                response = self.llm_model.return_response_with_tools(query, available_tools)
-                final_text.append(response)
+                follow_up_response = self.llm_model.return_response_with_tools(query, available_tools)
+                if hasattr(follow_up_response, 'content'):
+                    # If it's a structured response with content attribute
+                    for content in follow_up_response.content:
+                        if content.type == "text":
+                            final_text.append(content.text)
+                else:
+                    # If it's a simple string response
+                    final_text.append(follow_up_response)
 
         return "".join(final_text)
     

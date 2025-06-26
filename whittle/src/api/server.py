@@ -5,8 +5,9 @@ import re
 import os
 import subprocess
 
-#TODO: Implement OpenFOAM case running tool, mesh generation tool
+#TODO: Implement OpenFOAM case running tool
 #TODO: Implement SU2 case running tool, config file generation tool, file saving tool
+#TODO: Implement a way for people to save conversations and load them in as context later
 #TODO: RAG for CFD software documentation and user file (this is far in the future)
 #TODO: Implement tool for meshing for CFD software that can't mesh itself (this is far in the future)
 
