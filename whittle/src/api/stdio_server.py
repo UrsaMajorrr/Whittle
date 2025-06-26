@@ -93,7 +93,7 @@ class WhittleServer:
 
                 response = self.llm_model.return_response_with_tools(query, available_tools)
 
-                final_text.append(response.content[0].text)
+                final_text.append(response)
 
         return "".join(final_text)
     

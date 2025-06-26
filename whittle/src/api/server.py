@@ -169,10 +169,18 @@ FoamFile
 
 Provide just the file content starting with this header, followed by the blockMesh configuration. Do not include ```text``` tags in the file content.""")
     
-    with open(system_dir / "blockMeshDict", "w") as f:
+    blockMeshDict_path = system_dir / "blockMeshDict"
+    with open(blockMeshDict_path, "w") as f:
         f.write(response_text)
+
+    # Run blockMesh
     software_instance.block_mesh()
-    return f"Successfully generated a mesh for the {case_dir} case"
+    
+    # Read and return the generated file content
+    with open(blockMeshDict_path, "r") as f:
+        file_content = f.read()
+    
+    return f"Successfully generated blockMeshDict and ran blockMesh.\n\nGenerated blockMeshDict content:\n\n{file_content}"
 
 @mcp.tool()
 def foam_snappy_hex_mesh_generation(case_dir: str) -> str:
@@ -206,10 +214,18 @@ FoamFile
 
 Provide just the file content starting with this header, followed by the snappyHexMesh configuration. Do not include ```text``` tags in the file content.""")
     
-    with open(system_dir / "snappyHexMeshDict", "w") as f:
+    snappyHexMeshDict_path = system_dir / "snappyHexMeshDict"
+    with open(snappyHexMeshDict_path, "w") as f:
         f.write(response_text)
+
+    # Run snappyHexMesh
     software_instance.snappy_hex_mesh()
-    return f"Successfully generated a mesh for the {case_dir} case"
+    
+    # Read and return the generated file content
+    with open(snappyHexMeshDict_path, "r") as f:
+        file_content = f.read()
+    
+    return f"Successfully generated snappyHexMeshDict and ran snappyHexMesh.\n\nGenerated snappyHexMeshDict content:\n\n{file_content}"
 
 if __name__ == "__main__":
     setup_openfoam_env()

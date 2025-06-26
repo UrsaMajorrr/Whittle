@@ -77,9 +77,9 @@ class ClaudeLLMAgent(LLMAgent):
             stream=False,
             tools=tools
         )
-        ai_response = response.content[0].text
-        self.messages.append({"role": "assistant", "content": ai_response})
-        return response
+        # Don't store the response in conversation history for tool calls
+        # This prevents the model from repeating itself after tool results
+        return response.content[0].text
 
     def _store_conversation(self, conversation: list[str]) -> None:
         self.messages.extend(conversation)
