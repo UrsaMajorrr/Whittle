@@ -109,7 +109,7 @@ def foam_block_mesh_generation(case_dir: str) -> str:
     software_class = SoftwareRegistry().get_software("OpenFOAM")
     software_instance = software_class(case_dir=Path(case_dir))
     response_text = llm_model.return_response(f"Generate a blockMeshDict file for the {case_dir} case. Provide just the file content, no other text. Since it is in plain text, it will be wrapped in ```text``` tags. Do not include those tags in the file content.")
-    with open(Path(case_dir) / "system" / "blockMeshDict", "w") as f:
+    with open(Path(case_dir) /  "blockMeshDict", "w") as f:
         f.write(response_text)
     software_instance.block_mesh()
     return f"Successfully generated a mesh for the {case_dir} case"
