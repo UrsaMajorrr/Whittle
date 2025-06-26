@@ -66,14 +66,21 @@ def setup_cfd_case(prompt: str, case_dir: str) -> str:
     if not selected_software:
         return "Please specify which CFD software you'd prefer to use from: " + ", ".join(available_software)
     
+    # Create OpenFOAM case directory structure
+    case_path = Path(case_dir)
+    system_dir = case_path / "system"
+    system_dir.mkdir(parents=True, exist_ok=True)
+    
     # Get the software class and instantiate it
     software_class = registry.get_software(selected_software)
-    software_instance = software_class(case_dir=Path(case_dir))
+    software_instance = software_class(case_dir=case_path)
     
     # Generate config files
     for file in software_instance.get_required_files():
+        file_path = case_path / file  # This will handle the system/ prefix correctly
+        file_path.parent.mkdir(parents=True, exist_ok=True)
         response_text = llm_model.return_response(f"Generate a {file} file for the {selected_software} software. Provide just the file content, no other text. Since it is in plain text, it will be wrapped in ```text``` tags. Do not include those tags in the file content.")
-        with open(Path(case_dir) / file, "w") as f:
+        with open(file_path, "w") as f:
             f.write(response_text)
 
     return f"Successfully set up {selected_software} case with config files in {case_dir}"
@@ -107,9 +114,13 @@ def edit_file(file_path: str, content_to_change: str, new_content: str) -> str:
 def foam_block_mesh_generation(case_dir: str) -> str:
     """Generate a mesh for the given OpenFOAM case. This will run blockMesh for simple cases. Write the blockMeshDict file to the case directory. Remember to write the files to the system folder in the case directory."""
     software_class = SoftwareRegistry().get_software("OpenFOAM")
-    software_instance = software_class(case_dir=Path(case_dir))
+    case_path = Path(case_dir)
+    system_dir = case_path / "system"
+    system_dir.mkdir(parents=True, exist_ok=True)
+    
+    software_instance = software_class(case_dir=case_path)
     response_text = llm_model.return_response(f"Generate a blockMeshDict file for the {case_dir} case. Provide just the file content, no other text. Since it is in plain text, it will be wrapped in ```text``` tags. Do not include those tags in the file content.")
-    with open(Path(case_dir) /  "blockMeshDict", "w") as f:
+    with open(system_dir / "blockMeshDict", "w") as f:
         f.write(response_text)
     software_instance.block_mesh()
     return f"Successfully generated a mesh for the {case_dir} case"
@@ -118,9 +129,13 @@ def foam_block_mesh_generation(case_dir: str) -> str:
 def foam_snappy_hex_mesh_generation(case_dir: str) -> str:
     """Generate a mesh for the given OpenFOAM case. This will run snappyHexMesh for complex cases. Write the snappyHexMeshDict file to the case directory. Remember to write the files to the system folder in the case directory."""
     software_class = SoftwareRegistry().get_software("OpenFOAM")
-    software_instance = software_class(case_dir=Path(case_dir))
+    case_path = Path(case_dir)
+    system_dir = case_path / "system"
+    system_dir.mkdir(parents=True, exist_ok=True)
+    
+    software_instance = software_class(case_dir=case_path)
     response_text = llm_model.return_response(f"Generate a snappyHexMeshDict file for the {case_dir} case. Provide just the file content, no other text. Since it is in plain text, it will be wrapped in ```text``` tags. Do not include those tags in the file content.")
-    with open(Path(case_dir) / "system" / "snappyHexMeshDict", "w") as f:
+    with open(system_dir / "snappyHexMeshDict", "w") as f:
         f.write(response_text)
     software_instance.snappy_hex_mesh()
     return f"Successfully generated a mesh for the {case_dir} case"
