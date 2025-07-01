@@ -10,7 +10,8 @@ class FOAM(CFDSoftware):
         return "OpenFOAM"
 
     def get_required_files(self) -> list[str]:
-        return ["system/controlDict", "system/fvSchemes", "system/fvSolution"]
+        return ["system/controlDict", "system/fvSchemes", "system/fvSolution", "0/U", "0/p", \
+        "0/T", "0/nut", "0/nuTilda" "system/blockMeshDict"]
 
     def get_available_commands(self) -> list[str]:
         return ["blockMesh", "decomposePar", "snappyHexMesh", "checkMesh", "setFields", "icoFoam"]
@@ -59,7 +60,7 @@ class SU2(CFDSoftware):
     def run_command(self, command: str, options: dict[str, str]) -> None:
         if command not in self.get_available_commands():
             raise ValueError(f"Command {command} not found in available commands")
-        run(command, options, cwd=self.case_dir)
+        run(command, options, cwd=self.case_dir) #type: ignore
     
     def get_case_dir(self) -> Path:
         return self.case_dir

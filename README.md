@@ -1,85 +1,101 @@
-# Whittle
+# Whittle - AI-Powered CFD Assistant
 
-An AI-powered assistant for OpenFOAM meshing and workflows. This tool helps with:
-
-- AI-driven mesh generation and configuration
-- Intelligent dictionary file generation and validation
-- Best practices recommendations
-- Interactive mesh setup workflow
+An AI-powered assistant for CFD case setup and mesh generation, supporting multiple CFD solvers through a plugin architecture.
 
 ## Installation
 
+1. Clone the repository:
 ```bash
-# Clone the repository
 git clone <repository-url>
 cd Whittle
+```
 
-# Install in development mode
-pip install -e .
+2. Install the package in development mode:
+```bash
+pip3 install -e .
+```
+
+This will install all required dependencies and make the `whittle` module importable.
+
+## Project Structure
+
+```
+whittle/
+├── __init__.py              # Package initialization
+├── config.py               # Configuration settings
+└── src/                    # Source code
+    ├── __init__.py
+    ├── ai_assistant.py     # Main AI assistant class
+    ├── api/                # API-related modules
+    ├── application/        # Application layer
+    │   ├── cfd_interactor.py
+    │   └── llm_agent_interactor.py
+    ├── entities/           # Domain entities
+    │   ├── cfd_software.py
+    │   └── llm_agent.py
+    ├── infra/              # Infrastructure layer
+    │   └── registry.py
+    └── UI/                 # User interface
+        └── cli.py
 ```
 
 ## Usage
 
-### Interactive Mesh Generation
+### Basic Usage
 
-```bash
-# Start the AI-powered mesh generation assistant
-whittle path/to/case
+```python
+from whittle.src.ai_assistant import AIAssistant
+from pathlib import Path
 
-# You can also provide your OpenAI API key directly
-whittle path/to/case --api-key YOUR_API_KEY
+# Initialize the assistant
+assistant = AIAssistant(
+    api_key="your_openai_api_key",
+    solver_name="openfoam",
+    case_dir=Path.cwd()
+)
+
+# Run the assistant
+assistant.run()
 ```
 
-The assistant will guide you through:
-1. Understanding your geometry and simulation requirements
-2. Choosing the best meshing approach (blockMesh, snappyHexMesh)
-3. Generating all necessary dictionary files (controlDict, blockMeshDict, etc.)
-4. Validating configurations and providing best practices
-5. Suggesting improvements and optimizations
+### Available Solvers
 
-## Features
+Currently supported CFD solvers:
+- OpenFOAM
+- SU2
 
-### Current
-- AI-powered interactive mesh generation
-- Intelligent dictionary file creation and validation:
-  - controlDict with simulation settings
-  - blockMeshDict for simple geometries
-  - snappyHexMeshDict for complex geometries
-- Best practices recommendations
-- Real-time configuration validation
-- Dynamic mesh strategy optimization
+### Environment Variables
 
-### Planned
-- Advanced mesh quality analysis
-- Common error detection and resolution
-- Integration with more OpenFOAM utilities
-- Support for additional meshing tools:
-  - cfMesh
-  - Third-party meshing tools
-- Mesh visualization and preview
+Set the following environment variables for API access:
+- `OPENAI_API_KEY` - For OpenAI GPT models
+- `ANTHROPIC_API_KEY` - For Claude models
 
 ## Development
 
-This project uses modern Python tooling:
-- `pyproject.toml` for project configuration
-- Type hints throughout the codebase
-- Rich for beautiful terminal output
-- OpenAI GPT-4 for intelligent assistance
+### Testing Imports
 
-To contribute:
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Submit a pull request
+Run the test script to verify all modules can be imported correctly:
 
-## Environment Setup
+```bash
+python3 test_imports.py
+```
 
-The tool requires an OpenAI API key which can be provided in several ways:
-1. Command line argument: `--api-key`
-2. Environment variable: `OPENAI_API_KEY`
-3. `.env` file in the current directory
-4. `.env` file in your home directory
+### Running the Main Application
+
+```bash
+python3 main.py
+```
+
+Note: You'll need to set the `OPENAI_API_KEY` environment variable for full functionality.
+
+## Dependencies
+
+- Python 3.12+
+- rich - For beautiful console output
+- openai - For OpenAI API integration
+- anthropic - For Claude API integration
+- python-dotenv - For environment variable management
 
 ## License
 
-MIT
+[Add your license information here]

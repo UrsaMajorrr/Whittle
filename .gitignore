@@ -9,3 +9,6 @@ __pycache__/
 .coverage
 .coverage.*
 .coverage.*
+whittle.egg-info/
+.python-version
+main.py

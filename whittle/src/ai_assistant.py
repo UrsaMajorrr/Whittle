@@ -7,10 +7,10 @@ from rich.panel import Panel
 from rich.markdown import Markdown
 from pathlib import Path
 
-from whittle.src.interfaces.prompt_interface import IPromptManager
-from whittle.src.managers.solver_factory import SolverFactory, SolverManagers
-from whittle.src.managers.plugin_registry import PluginRegistry
-from whittle.src.managers.mesh_executor import MeshExecutor
+# Import from actual modules that exist in the project
+from whittle.src.application.llm_agent_interactor import OpenAILLMAgent, ClaudeLLMAgent
+from whittle.src.application.cfd_interactor import FOAM, SU2
+from whittle.src.infra.registry import SoftwareRegistry, ModelRegistry
 
 class AIAssistant:
     """
@@ -22,35 +22,42 @@ class AIAssistant:
         api_key: str,
         solver_name: str = "openfoam",
         console: Optional[Console] = None,
-        prompt_manager: Optional[IPromptManager] = None,
         case_dir: Optional[Path] = None,
     ):
         self.console = console or Console()
         self.solver_name = solver_name
         self.api_key = api_key
-        self.case_dir = case_dir
-        # Get all required managers from the factory
-        managers: SolverManagers = SolverFactory.create_managers(
-            solver_name=self.solver_name,
-            api_key=self.api_key,
-            console=self.console,
-            prompt_manager=prompt_manager,
-            case_dir=self.case_dir
-        )
-        self.mesh_executor = MeshExecutor(
-            case_dir=self.case_dir,
-            console=self.console
+        self.case_dir = case_dir or Path.cwd()
+        
+        # Initialize the registries
+        self.software_registry = SoftwareRegistry()
+        self.model_registry = ModelRegistry(
+            system_prompt="You are a helpful assistant that can help with CFD simulations."
         )
         
-        # Store managers
-        self.prompt_manager = managers.prompt_manager
-        self.case_dir = managers.case_dir
-        self.conversation_manager = managers.conversation_manager
+        # Initialize LLM agent using the registry
+        self.llm_agent = self.model_registry.get_model("gpt")  # Default to GPT
+        
+        # Initialize CFD software
+        if solver_name.lower() == "openfoam":
+            self.cfd_software = FOAM(case_dir=self.case_dir)
+        elif solver_name.lower() == "su2":
+            self.cfd_software = SU2(case_dir=self.case_dir)
+        else:
+            raise ValueError(f"Unsupported solver: {solver_name}")
     
     @classmethod
     def available_solvers(cls) -> list[str]:
         """Get list of available solver names"""
-        return PluginRegistry.available_solvers()
+        return ["openfoam", "su2"]
+    
+    def available_models(self) -> list[str]:
+        """Get list of available LLM models"""
+        return self.model_registry.get_models()
+    
+    def set_model(self, model_name: str) -> None:
+        """Change the LLM model"""
+        self.llm_agent = self.model_registry.get_model(model_name)
     
     def run(self) -> None:
         """Main entry point for the AI mesh generation assistant"""
@@ -63,9 +70,8 @@ class AIAssistant:
         ))
         
         # Get initial response
-        response = self.conversation_manager.get_response(
-            self.prompt_manager.get_initial_prompt()
-        )
+        initial_prompt = f"Help me set up a {solver_name} case. What do you need to know?"
+        response = self.llm_agent.return_response(initial_prompt)
         self.console.print(Markdown(response))
         
         # Continue conversation until user is done
@@ -76,11 +82,19 @@ class AIAssistant:
                 break
             elif user_input.lower() == 'run':
                 self.console.print("\n[green]✓[/green] Running the case...")
-                self.mesh_executor.run_mesh()
+                # This would integrate with the CFD software
+                if isinstance(self.cfd_software, FOAM):
+                    result = self.cfd_software.block_mesh()
+                    self.console.print(f"Mesh generation result: {result}")
+                else:
+                    self.console.print(f"Running {solver_name} case...")
+                    # For SU2, you might want to run different commands
+                    available_commands = self.cfd_software.get_available_commands()
+                    self.console.print(f"Available commands: {available_commands}")
                 break
             
             # Get AI response for user input
-            response = self.conversation_manager.get_response(user_input)
+            response = self.llm_agent.return_response(user_input)
             self.console.print(Markdown(response))
         
         self.console.print("\n[green]✓[/green] Session complete!") 

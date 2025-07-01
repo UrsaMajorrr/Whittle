@@ -26,10 +26,9 @@ class OpenAILLMAgent(LLMAgent):
         return response
     
     def return_response_with_tools(self, prompt: str, tools: list[str]) -> str:
-        self.messages.append({"role": "user", "content": prompt})
         response = self.client.chat.completions.create(
             model="gpt-4.1",
-            messages=self.messages,
+            messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             stream=False,
             tools=tools
@@ -68,10 +67,10 @@ class ClaudeLLMAgent(LLMAgent):
         return response
     
     def return_response_with_tools(self, prompt: str, tools: list[str]) -> str:
-        self.messages.append({"role": "user", "content": prompt})
+        #self.messages.append({"role": "user", "content": prompt})
         response = self.client.messages.create(
             model="claude-sonnet-4-20250514",
-            messages=self.messages,
+            messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=8192,
             stream=False,

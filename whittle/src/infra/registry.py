@@ -1,13 +1,14 @@
-from typing import Type
+from typing import Type, Union
 from whittle.src.application.cfd_interactor import FOAM, SU2
 from whittle.src.application.llm_agent_interactor import OpenAILLMAgent, ClaudeLLMAgent
 from whittle.src.entities.cfd_software import CFDSoftware
+from whittle.src.entities.llm_agent import LLMAgent
 
 class SoftwareRegistry:
     def __init__(self):
         self.software = {
-            "OpenFOAM": FOAM,
-            "SU2": SU2
+            "openfoam": FOAM,
+            "su2": SU2
         }
 
     def register_software(self, software_name: str, software_class: Type[CFDSoftware]) -> None:
@@ -22,7 +23,7 @@ class SoftwareRegistry:
         return list(self.software.keys())
     
 class ModelRegistry:
-    def __init__(self, system_prompt: str = "You are a helpful assistant that can help with CFD simulations."):
+    def __init__(self, system_prompt: str):
         self.models = {
             "gpt": OpenAILLMAgent,
             "claude": ClaudeLLMAgent,
@@ -32,7 +33,12 @@ class ModelRegistry:
     def get_models(self) -> list[str]:
         return list(self.models.keys())
     
-    def get_model(self, model_name: str) -> str:
+    def get_model(self, model_name: str) -> LLMAgent:
+        """Get a model instance by name"""
         if model_name not in self.models:
             raise ValueError(f"Unknown model: {model_name}")
         return self.models[model_name](system_prompt=self.system_prompt)
+    
+    def register_model(self, model_name: str, model_class: Type[LLMAgent]) -> None:
+        """Register a new model class"""
+        self.models[model_name] = model_class
