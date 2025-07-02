@@ -9,6 +9,7 @@ dependencies = [
     "openai",
     "anthropic",
     "python-dotenv",
+    "pydeps>=3.0.1",
 ]
 
 [build-system]

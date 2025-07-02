@@ -12,3 +12,4 @@ __pycache__/
 whittle.egg-info/
 .python-version
 main.py
+uv.lock

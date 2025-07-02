@@ -5,13 +5,9 @@ import sys
 project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 from whittle.src.infra.registry import SoftwareRegistry, ModelRegistry
-import re
-import os
 import subprocess
 
-#TODO: Implement OpenFOAM case running tool
 #TODO: Implement SU2 case running tool, config file generation tool, file saving tool
-#TODO: Implement a way for people to save conversations and load them in as context later (One problem: tool calling is based a lot on context)
 #TODO: RAG for CFD software documentation and user file (this is far in the future)
 #TODO: Implement tool for meshing for CFD software that can't mesh itself (this is far in the future)
 
@@ -195,6 +191,40 @@ def run_openfoam_simulation(software_name: str, case_dir: str) -> str:  # type: 
         return f"Failed to run simulation via Docker: {str(e)}"
 
 @mcp.tool()
+def fix_error_in_file(file_path: str, error_description: str) -> str:
+    """Fix an error in a file. If the file exists, returns its current content first."""
+    try:
+        current_content = ""
+        if Path(file_path).exists():
+            with open(file_path, "r") as f:
+                current_content = f.read()
+        else:
+            return f"File {file_path} does not exist."
+        
+        response_text = llm_model.return_response(  # type: ignore
+            f"""Fix the error in the file {file_path} based on this description: "{error_description}"
+            
+            Return ONLY the file content starting with the header, followed by the dictionary entries. Do not include ```text``` tags in the file content."""
+        )
+
+        with open(file_path, "w") as f:
+            f.write(response_text.content[0].text)  # type: ignore
+        
+        return f"Successfully fixed error in {file_path}."
+    except Exception as e:
+        return f"Error fixing error in {file_path}: {str(e)}"
+
+@mcp.tool()
+def add_file_if_not_exists(file_path: str, file_content: str) -> str:
+    """Add a file if it does not exist. If the file exists, returns its current content first."""
+    if Path(file_path).exists():
+        return f"File {file_path} already exists."
+    else:
+        with open(file_path, "w") as f:
+            f.write(file_content)
+        return f"Successfully added {file_path}."
+
+@mcp.tool()
 def edit_file(file_path: str, content_to_change: str, new_content: str) -> str:
     """Edit a file with the given content. If the file exists, returns its current content first."""
     try:
@@ -202,18 +232,21 @@ def edit_file(file_path: str, content_to_change: str, new_content: str) -> str:
         if Path(file_path).exists():
             with open(file_path, "r") as f:
                 current_content = f.read()
-
-        print(content_to_change)
-        print(new_content)
+        else:
+            return f"File {file_path} does not exist."
         
-        current_content = re.sub(content_to_change, new_content, current_content)
+        response_text = llm_model.return_response(  # type: ignore
+            f"""Edit the file {file_path} based on this description: "{content_to_change}"
+            
+            Return ONLY the file content starting with the header, followed by the dictionary entries. Do not include ```text``` tags in the file content."""
+        )
 
         with open(file_path, "w") as f:
-            f.write(current_content)
+            f.write(response_text.content[0].text)  # type: ignore
         
-        return f"Current content:\n{current_content}"
+        return f"Successfully edited {file_path}."
     except Exception as e:
-        return f"Error editing file: {str(e)}"
+        return f"Error editing {file_path}: {str(e)}"
 
 @mcp.tool()
 def foam_block_mesh_generation(case_dir: str) -> str:
