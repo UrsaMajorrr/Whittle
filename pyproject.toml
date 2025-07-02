@@ -1,29 +1,21 @@
 [project]
 name = "whittle"
 version = "0.1.0"
-description = "An AI-powered copilot for OpenFOAM meshing and workflow assistance"
-authors = [
-    {name = "Kade"}
-]
+description = "AI-powered assistant for CFD case setup and mesh generation"
+readme = "README.md"
+requires-python = ">=3.12"
 dependencies = [
-    "typer>=0.9.0",
-    "rich>=13.7.0",
-    "pydantic>=2.6.0",
-    "openai>=1.12.0",
-    "PyYAML>=6.0.1",
-    "python-dotenv>=1.0.0",
+    "rich",
+    "openai",
+    "anthropic",
+    "python-dotenv",
+    "pydeps>=3.0.1",
 ]
-
-[project.scripts]
-whittle = "whittle.cli:main"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-
-[tool.ruff]
-line-length = 100 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["whittle*"]
