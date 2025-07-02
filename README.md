@@ -60,8 +60,8 @@ Whittle uses the Model Context Protocol (MCP) to communicate with Claude Desktop
 {
     "mcpServers": {
         "whittle": {
-            "command": "/Users/kadecarlson/.local/bin/uv",
-            "args": ["--directory", "/Users/kadecarlson/Whittle/whittle/src/api", "run", "server.py"]
+            "command": "/path/to/bin/uv",
+            "args": ["--directory", "/path/to/Whittle/whittle/src/api", "run", "server.py"]
         }
     }
 }
